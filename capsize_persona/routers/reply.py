@@ -8,6 +8,7 @@ from capsize_persona.config import Settings
 from capsize_persona.deps import SessionDep, SettingsDep
 from capsize_persona.generation import (
     STATUS_SENT,
+    ReplyResult,
     extract_new_facts,
     generate_safe_reply,
 )
@@ -71,6 +72,22 @@ def _maybe_remember(
     )
 
 
+def _generate(
+    settings: Settings,
+    persona: Persona,
+    existing: list[str],
+    body: ReplyRequest,
+) -> ReplyResult:
+    return generate_safe_reply(
+        settings,
+        persona,
+        existing,
+        body.message,
+        body.author,
+        body.speaker_name,
+    )
+
+
 def _run_reply(
     session: Session,
     settings: Settings,
@@ -78,9 +95,7 @@ def _run_reply(
     body: ReplyRequest,
 ) -> ReplyResponse:
     existing = _facts_for(session, persona.id, body.conversation_key)
-    result = generate_safe_reply(
-        settings, persona, existing, body.message, body.author
-    )
+    result = _generate(settings, persona, existing, body)
     if result.status == STATUS_SENT:
         _maybe_remember(session, settings, persona.id, body, existing)
     return ReplyResponse(

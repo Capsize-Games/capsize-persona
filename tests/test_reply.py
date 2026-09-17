@@ -39,6 +39,7 @@ def test_reply_returns_text_and_remembers_facts(
             "conversation_key": "discord:1",
             "message": "just moved to Austin",
             "author": "alice",
+            "speaker_name": "testbot",
         },
     )
 
@@ -75,6 +76,7 @@ def test_reply_folds_prior_facts_into_next_call(
             "conversation_key": key,
             "message": "just moved to Austin",
             "author": "alice",
+            "speaker_name": "testbot",
         },
     )
 
@@ -85,11 +87,39 @@ def test_reply_folds_prior_facts_into_next_call(
             "conversation_key": key,
             "message": "hi again",
             "author": "alice",
+            "speaker_name": "testbot",
         },
     )
 
     second_call_style_guide = mock_generate_reply.call_args_list[1].args[1]
     assert "lives in Austin" in second_call_style_guide
+
+
+@patch("capsize_persona.generation.extract_facts")
+@patch("capsize_persona.generation.generate_reply")
+def test_reply_tells_model_its_speaker_name(
+    mock_generate_reply: MagicMock,
+    mock_extract_facts: MagicMock,
+    client: TestClient,
+    api_headers: dict[str, str],
+) -> None:
+    mock_generate_reply.return_value = "hey"
+    mock_extract_facts.return_value = []
+    persona_id = _create_persona(client, api_headers)
+
+    client.post(
+        f"{PERSONAS_URL}/{persona_id}/reply",
+        headers=api_headers,
+        json={
+            "conversation_key": "discord:1",
+            "message": "hi",
+            "author": "alice",
+            "speaker_name": "capsize",
+        },
+    )
+
+    style_guide = mock_generate_reply.call_args.args[1]
+    assert "You are capsize." in style_guide
 
 
 @patch("capsize_persona.generation.generate_reply")
@@ -119,6 +149,7 @@ def test_reply_suppresses_when_repeatedly_flagged(
             "conversation_key": "discord:1",
             "message": "hi",
             "author": "alice",
+            "speaker_name": "testbot",
         },
     )
 
@@ -146,6 +177,7 @@ def test_reply_flags_facts_from_private_source(
             "conversation_key": "discord:1",
             "message": "a secret",
             "author": "alice",
+            "speaker_name": "testbot",
             "source_is_private": True,
         },
     )
@@ -177,6 +209,7 @@ def test_reply_defaults_facts_to_not_sensitive(
             "conversation_key": "discord:1",
             "message": "hi",
             "author": "alice",
+            "speaker_name": "testbot",
         },
     )
 
@@ -194,7 +227,12 @@ def test_reply_404s_for_missing_persona(
     response = client.post(
         f"{PERSONAS_URL}/999/reply",
         headers=api_headers,
-        json={"conversation_key": "k", "message": "hi", "author": "alice"},
+        json={
+            "conversation_key": "k",
+            "message": "hi",
+            "author": "alice",
+            "speaker_name": "testbot",
+        },
     )
     assert response.status_code == 404
 
@@ -202,6 +240,11 @@ def test_reply_404s_for_missing_persona(
 def test_reply_requires_api_key(client: TestClient) -> None:
     response = client.post(
         f"{PERSONAS_URL}/1/reply",
-        json={"conversation_key": "k", "message": "hi", "author": "alice"},
+        json={
+            "conversation_key": "k",
+            "message": "hi",
+            "author": "alice",
+            "speaker_name": "testbot",
+        },
     )
     assert response.status_code == 401

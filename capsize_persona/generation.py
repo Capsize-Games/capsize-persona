@@ -50,6 +50,17 @@ class _VoiceContext:
     threshold: float
 
 
+def _fold_identity(style_guide: str, speaker_name: str) -> str:
+    identity = (
+        f"You are {speaker_name}. Always refer to yourself by this "
+        "name - never by any other name, even one that appears "
+        "below in the style guide or in examples of this person's "
+        "writing. The style guide shapes how you write, not who you "
+        "say you are."
+    )
+    return f"{identity}\n\n{style_guide}"
+
+
 def _fold_memory(style_guide: str, facts: list[str]) -> str:
     if not facts:
         return style_guide
@@ -64,13 +75,15 @@ def _extra_body(provider_order: list[str]) -> dict[str, object] | None:
 
 
 def _build_context(
-    settings: Settings, persona: Persona, facts: list[str]
+    settings: Settings, persona: Persona, facts: list[str], speaker_name: str
 ) -> _VoiceContext:
+    style_guide = _fold_identity(persona.style_guide, speaker_name)
+    style_guide = _fold_memory(style_guide, facts)
     return _VoiceContext(
         settings.openrouter_api_key,
         settings.generation_model,
         _extra_body(settings.generation_provider_order),
-        _fold_memory(persona.style_guide, facts),
+        style_guide,
         json.loads(persona.exemplars_json),
         load_categories(json.loads(persona.safety_categories_json)),
         persona.safety_threshold,
@@ -116,13 +129,18 @@ def generate_safe_reply(
     facts: list[str],
     message: str,
     author: str,
+    speaker_name: str,
 ) -> ReplyResult:
     """Generate a reply, regenerating if the safety scorer flags it.
 
     Suppresses (returns no text) if every attempt up to `MAX_ATTEMPTS`
-    is flagged.
+    is flagged. `speaker_name` is what the persona calls itself in
+    this reply - a persona speaking as "capsize" on Discord and "Joe"
+    on joecurlee.com is the same voice under two different names, not
+    two personas, so this is a per-call argument, not a `Persona`
+    field.
     """
-    ctx = _build_context(settings, persona, facts)
+    ctx = _build_context(settings, persona, facts, speaker_name)
     return _run_attempts(ctx, message, author)
 
 

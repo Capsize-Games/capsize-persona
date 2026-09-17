@@ -34,7 +34,12 @@ def test_delete_fact_removes_it(
     client.post(
         f"{PERSONAS_URL}/{persona_id}/reply",
         headers=api_headers,
-        json={"conversation_key": "k", "message": "hi", "author": "alice"},
+        json={
+            "conversation_key": "k",
+            "message": "hi",
+            "author": "alice",
+            "speaker_name": "testbot",
+        },
     )
     fact_id = client.get(
         f"{PERSONAS_URL}/{persona_id}/memory",

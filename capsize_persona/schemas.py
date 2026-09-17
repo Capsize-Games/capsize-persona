@@ -45,6 +45,12 @@ class ReplyRequest(BaseModel):
     message: str = Field(min_length=1)
     author: str = Field(min_length=1, max_length=120)
 
+    # What the persona calls itself in this reply - e.g. "capsize" on
+    # Discord, "Joe" on joecurlee.com. A required, per-call argument
+    # rather than a `Persona` field: the same voice under a different
+    # name in a different place is still one persona, not two.
+    speaker_name: str = Field(min_length=1, max_length=120)
+
     # True when the caller knows this turn happened somewhere not
     # visible to everyone (e.g. a private Discord channel) - flags any
     # fact extracted from it as `MemoryFact.is_sensitive`.
