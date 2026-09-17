@@ -13,6 +13,7 @@ from capsize_voice import (
     GenerationError,
     SafetyCategory,
     extract_facts,
+    generate_candidates,
     generate_reply,
     is_flagged,
     load_categories,
@@ -21,6 +22,15 @@ from capsize_voice import (
 
 from capsize_persona.config import Settings
 from capsize_persona.models import Persona
+
+__all__ = [
+    "STATUS_SENT",
+    "GenerationError",
+    "ReplyResult",
+    "extract_new_facts",
+    "generate_post_candidates",
+    "generate_safe_reply",
+]
 
 MAX_ATTEMPTS = 3
 
@@ -142,6 +152,34 @@ def generate_safe_reply(
     """
     ctx = _build_context(settings, persona, facts, speaker_name)
     return _run_attempts(ctx, message, author)
+
+
+def generate_post_candidates(
+    settings: Settings,
+    persona: Persona,
+    context: str,
+    count: int,
+    speaker_name: str,
+) -> list[str]:
+    """Return up to `count` distinct candidate posts about `context`.
+
+    An original post, not a reply - no conversation memory is folded
+    in the way `generate_safe_reply` folds remembered facts, since a
+    stand-alone post has no prior turn to be informed by. Candidates
+    go to a human review queue, same as `capsize_voice.
+    generate_candidates`'s own callers - no safety-score gate here;
+    that gate is Joe approving each one, not an automated filter.
+    """
+    style_guide = _fold_identity(persona.style_guide, speaker_name)
+    return generate_candidates(
+        settings.openrouter_api_key,
+        style_guide,
+        json.loads(persona.exemplars_json),
+        context,
+        count,
+        model=settings.generation_model,
+        extra_body=_extra_body(settings.generation_provider_order),
+    )
 
 
 def extract_new_facts(

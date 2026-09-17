@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from capsize_persona.routers import memory, personas, reply
+from capsize_persona.routers import generate, memory, personas, reply
 
 
 def create_app() -> FastAPI:
@@ -16,6 +16,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Capsize Persona")
     app.include_router(personas.router, prefix="/api")
     app.include_router(reply.router, prefix="/api")
+    app.include_router(generate.router, prefix="/api")
     app.include_router(memory.router, prefix="/api")
 
     @app.get("/health")

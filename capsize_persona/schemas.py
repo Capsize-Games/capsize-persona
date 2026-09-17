@@ -66,6 +66,23 @@ class ReplyResponse(BaseModel):
     attempts: int
 
 
+class GenerateRequest(BaseModel):
+    """Body for POST /personas/{id}/generate."""
+
+    context: str = Field(min_length=1)
+    count: int = Field(gt=0, le=20)
+
+    # See `ReplyRequest.speaker_name` - same per-call argument, same
+    # reason: one persona, many names depending on where it's posting.
+    speaker_name: str = Field(min_length=1, max_length=120)
+
+
+class GenerateResponse(BaseModel):
+    """What POST /personas/{id}/generate returns."""
+
+    candidates: list[str]
+
+
 class MemoryFactCreate(BaseModel):
     """Body for POST /personas/{id}/memory - a direct, known fact.
 
