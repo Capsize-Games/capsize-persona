@@ -47,6 +47,28 @@ def test_get_persona(client: TestClient, api_headers: dict[str, str]) -> None:
     assert response.json()["exemplars"] == ["hey", "sounds good", "not really"]
 
 
+def test_get_persona_by_name(
+    client: TestClient, api_headers: dict[str, str]
+) -> None:
+    client.post(PERSONAS_URL, headers=api_headers, json=_body())
+
+    response = client.get(
+        f"{PERSONAS_URL}/by-name/Test Persona", headers=api_headers
+    )
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "Test Persona"
+
+
+def test_get_persona_by_name_404s_when_unknown(
+    client: TestClient, api_headers: dict[str, str]
+) -> None:
+    response = client.get(
+        f"{PERSONAS_URL}/by-name/nope", headers=api_headers
+    )
+    assert response.status_code == 404
+
+
 def test_get_missing_persona_404s(
     client: TestClient, api_headers: dict[str, str]
 ) -> None:

@@ -69,6 +69,22 @@ def get_persona(persona_id: int, session: SessionDep) -> PersonaOut:
     return _to_out(_get_or_404(session, persona_id))
 
 
+@router.get("/by-name/{name}", response_model=PersonaOut)
+def get_persona_by_name(name: str, session: SessionDep) -> PersonaOut:
+    """Fetch one persona by its unique name.
+
+    Callers outside this service (an AIRunner tool call, a Discord
+    bot's config) address a persona by its human-readable name, not
+    the internal row id.
+    """
+    persona = session.query(Persona).filter_by(name=name).first()
+    if persona is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Persona not found"
+        )
+    return _to_out(persona)
+
+
 @router.patch("/{persona_id}", response_model=PersonaOut)
 def update_persona(
     persona_id: int, body: PersonaUpdate, session: SessionDep

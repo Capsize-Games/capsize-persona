@@ -80,3 +80,30 @@ def test_list_memory_scoped_to_conversation_key(
 
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_create_fact_direct_write(
+    client: TestClient, api_headers: dict[str, str]
+) -> None:
+    persona_id = _create_persona(client, api_headers)
+
+    response = client.post(
+        f"{PERSONAS_URL}/{persona_id}/memory",
+        headers=api_headers,
+        json={"conversation_key": "k", "fact_text": "prefers tea"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["fact_text"] == "prefers tea"
+
+
+def test_create_fact_404s_for_missing_persona(
+    client: TestClient, api_headers: dict[str, str]
+) -> None:
+    response = client.post(
+        f"{PERSONAS_URL}/999/memory",
+        headers=api_headers,
+        json={"conversation_key": "k", "fact_text": "prefers tea"},
+    )
+
+    assert response.status_code == 404

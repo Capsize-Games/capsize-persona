@@ -55,6 +55,18 @@ class ReplyResponse(BaseModel):
     attempts: int
 
 
+class MemoryFactCreate(BaseModel):
+    """Body for POST /personas/{id}/memory - a direct, known fact.
+
+    For a caller that already knows a fact rather than relying on
+    `/reply`'s own extraction (e.g. an AIRunner tool call telling the
+    persona something outright).
+    """
+
+    conversation_key: str = Field(min_length=1, max_length=255)
+    fact_text: str = Field(min_length=1, max_length=500)
+
+
 class MemoryFactOut(BaseModel):
     """What the memory endpoints return for one stored fact."""
 
