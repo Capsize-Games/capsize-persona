@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "capsize-persona"
+version = "0.1.0"
+description = "A standalone voice-matched, memory-backed reply service: personas with long-term per-conversation fact memory, generated in a measured voice and safety-gated before they go out."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Capsize LLC", email = "contact@capsizegames.com" },
+]
+keywords = [
+    "llm",
+    "chatbot",
+    "memory",
+    "persona",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Framework :: FastAPI",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+dependencies = [
+    "capsize-voice>=0.1.0",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0.30",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "httpx>=0.27",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+capsize-persona = "capsize_persona.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/capsize-games/capsize-persona"
+Issues = "https://github.com/capsize-games/capsize-persona/issues"
+
+[tool.setuptools.packages.find]
+include = ["capsize_persona*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
