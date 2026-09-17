@@ -38,6 +38,7 @@ def _remember(
     persona_id: int,
     conversation_key: str,
     facts: list[str],
+    is_sensitive: bool,
 ) -> None:
     for fact in facts:
         session.add(
@@ -45,6 +46,7 @@ def _remember(
                 persona_id=persona_id,
                 conversation_key=conversation_key,
                 fact_text=fact,
+                is_sensitive=is_sensitive,
             )
         )
     session.commit()
@@ -60,7 +62,13 @@ def _maybe_remember(
     new_facts = extract_new_facts(
         settings, body.message, body.author, existing
     )
-    _remember(session, persona_id, body.conversation_key, new_facts)
+    _remember(
+        session,
+        persona_id,
+        body.conversation_key,
+        new_facts,
+        body.source_is_private,
+    )
 
 
 def _run_reply(

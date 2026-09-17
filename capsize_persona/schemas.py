@@ -45,6 +45,11 @@ class ReplyRequest(BaseModel):
     message: str = Field(min_length=1)
     author: str = Field(min_length=1, max_length=120)
 
+    # True when the caller knows this turn happened somewhere not
+    # visible to everyone (e.g. a private Discord channel) - flags any
+    # fact extracted from it as `MemoryFact.is_sensitive`.
+    source_is_private: bool = False
+
 
 class ReplyResponse(BaseModel):
     """What POST /personas/{id}/reply returns."""
@@ -65,6 +70,7 @@ class MemoryFactCreate(BaseModel):
 
     conversation_key: str = Field(min_length=1, max_length=255)
     fact_text: str = Field(min_length=1, max_length=500)
+    is_sensitive: bool = False
 
 
 class MemoryFactOut(BaseModel):
@@ -75,4 +81,5 @@ class MemoryFactOut(BaseModel):
     id: int
     conversation_key: str
     fact_text: str
+    is_sensitive: bool
     created_at: datetime.datetime

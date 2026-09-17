@@ -2,7 +2,7 @@
 
 import datetime
 
-from sqlalchemy import Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from capsize_persona.db.base import Base, UtcDateTime
@@ -56,6 +56,12 @@ class MemoryFact(Base):
     persona_id: Mapped[int] = mapped_column(ForeignKey("personas.id"))
     conversation_key: Mapped[str] = mapped_column(String(255), index=True)
     fact_text: Mapped[str] = mapped_column(String(500))
+
+    # Set when the caller flags the turn this was learned from as
+    # having happened somewhere not visible to everyone (e.g. a
+    # private Discord channel) - a note for whoever reviews memory
+    # later, not a storage restriction this service enforces itself.
+    is_sensitive: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         UtcDateTime, default=_utcnow

@@ -95,6 +95,26 @@ def test_create_fact_direct_write(
 
     assert response.status_code == 201
     assert response.json()["fact_text"] == "prefers tea"
+    assert response.json()["is_sensitive"] is False
+
+
+def test_create_fact_direct_write_can_flag_sensitive(
+    client: TestClient, api_headers: dict[str, str]
+) -> None:
+    persona_id = _create_persona(client, api_headers)
+
+    response = client.post(
+        f"{PERSONAS_URL}/{persona_id}/memory",
+        headers=api_headers,
+        json={
+            "conversation_key": "k",
+            "fact_text": "a secret",
+            "is_sensitive": True,
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["is_sensitive"] is True
 
 
 def test_create_fact_404s_for_missing_persona(

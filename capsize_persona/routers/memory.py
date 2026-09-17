@@ -43,6 +43,7 @@ def create_fact(
         persona_id=persona_id,
         conversation_key=body.conversation_key,
         fact_text=body.fact_text,
+        is_sensitive=body.is_sensitive,
     )
     session.add(fact)
     session.commit()

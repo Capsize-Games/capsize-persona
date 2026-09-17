@@ -127,6 +127,67 @@ def test_reply_suppresses_when_repeatedly_flagged(
     assert mock_generate_reply.call_count == 3
 
 
+@patch("capsize_persona.generation.extract_facts")
+@patch("capsize_persona.generation.generate_reply")
+def test_reply_flags_facts_from_private_source(
+    mock_generate_reply: MagicMock,
+    mock_extract_facts: MagicMock,
+    client: TestClient,
+    api_headers: dict[str, str],
+) -> None:
+    mock_generate_reply.return_value = "reply"
+    mock_extract_facts.return_value = ["a private fact"]
+    persona_id = _create_persona(client, api_headers)
+
+    client.post(
+        f"{PERSONAS_URL}/{persona_id}/reply",
+        headers=api_headers,
+        json={
+            "conversation_key": "discord:1",
+            "message": "a secret",
+            "author": "alice",
+            "source_is_private": True,
+        },
+    )
+
+    memory = client.get(
+        f"{PERSONAS_URL}/{persona_id}/memory",
+        headers=api_headers,
+        params={"conversation_key": "discord:1"},
+    ).json()
+    assert memory[0]["is_sensitive"] is True
+
+
+@patch("capsize_persona.generation.extract_facts")
+@patch("capsize_persona.generation.generate_reply")
+def test_reply_defaults_facts_to_not_sensitive(
+    mock_generate_reply: MagicMock,
+    mock_extract_facts: MagicMock,
+    client: TestClient,
+    api_headers: dict[str, str],
+) -> None:
+    mock_generate_reply.return_value = "reply"
+    mock_extract_facts.return_value = ["a public fact"]
+    persona_id = _create_persona(client, api_headers)
+
+    client.post(
+        f"{PERSONAS_URL}/{persona_id}/reply",
+        headers=api_headers,
+        json={
+            "conversation_key": "discord:1",
+            "message": "hi",
+            "author": "alice",
+        },
+    )
+
+    memory = client.get(
+        f"{PERSONAS_URL}/{persona_id}/memory",
+        headers=api_headers,
+        params={"conversation_key": "discord:1"},
+    ).json()
+    assert memory[0]["is_sensitive"] is False
+
+
 def test_reply_404s_for_missing_persona(
     client: TestClient, api_headers: dict[str, str]
 ) -> None:
