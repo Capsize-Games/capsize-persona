@@ -79,9 +79,19 @@ def _fold_memory(style_guide: str, facts: list[str]) -> str:
 
 
 def _extra_body(provider_order: list[str]) -> dict[str, object] | None:
+    """Build the OpenRouter `provider` routing object, or `None`.
+
+    `only` (not `allow_fallbacks: False`) is what actually restricts
+    requests to this list while still retrying within it - the two
+    look similar but `allow_fallbacks: False` on its own only ever
+    tries the *first* entry in `order` and fails outright on any
+    error from it, silently ignoring the rest of the list. Confirmed
+    live: a lone-provider pin 429'd with no retry even with a second
+    provider listed in `order`, until `only` was added too.
+    """
     if not provider_order:
         return None
-    return {"provider": {"order": provider_order, "allow_fallbacks": False}}
+    return {"provider": {"order": provider_order, "only": provider_order}}
 
 
 def _build_context(
