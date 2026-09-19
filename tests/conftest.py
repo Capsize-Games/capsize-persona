@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from capsize_memory.db import Base as MemoryBase
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -39,6 +40,7 @@ def session_factory(settings: Settings) -> sessionmaker[Session]:
     """A session factory bound to a fresh in-memory SQLite schema."""
     engine = make_engine(settings.database_url)
     Base.metadata.create_all(engine)
+    MemoryBase.metadata.create_all(engine)
     return make_session_factory(engine)
 
 

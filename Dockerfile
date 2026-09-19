@@ -12,12 +12,14 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y git && \
     rm -rf /var/lib/apt/lists/*
 
-# capsize-voice isn't on PyPI yet, so it's installed from source first
-# and the project install below then finds it already satisfied.
+# capsize-voice and capsize-memory aren't on PyPI yet, so they're
+# installed from source first and the project install below then
+# finds them already satisfied.
 ARG CAPSIZE_VOICE_SPEC="capsize-voice @ git+https://github.com/capsize-games/capsize-voice.git@main"
+ARG CAPSIZE_MEMORY_SPEC="capsize-memory @ git+https://github.com/capsize-games/capsize-memory.git@master"
 
 COPY pyproject.toml README.md ./
-RUN pip install --no-cache-dir "${CAPSIZE_VOICE_SPEC}" && \
+RUN pip install --no-cache-dir "${CAPSIZE_VOICE_SPEC}" "${CAPSIZE_MEMORY_SPEC}" && \
     mkdir capsize_persona && touch capsize_persona/__init__.py && \
     pip install --no-cache-dir . && \
     rm -rf capsize_persona

@@ -2,7 +2,15 @@
 
 from fastapi import FastAPI
 
-from capsize_persona.routers import generate, memory, personas, reply
+from capsize_persona.routers import (
+    generate,
+    memory,
+    personas,
+    reply,
+    rooms,
+    should_interject,
+    turns,
+)
 
 
 def create_app() -> FastAPI:
@@ -18,6 +26,9 @@ def create_app() -> FastAPI:
     app.include_router(reply.router, prefix="/api")
     app.include_router(generate.router, prefix="/api")
     app.include_router(memory.router, prefix="/api")
+    app.include_router(rooms.router, prefix="/api")
+    app.include_router(turns.router, prefix="/api")
+    app.include_router(should_interject.router, prefix="/api")
 
     @app.get("/health")
     def health() -> dict[str, bool]:

@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     # Comma-separated OpenRouter upstream-provider pin, empty = auto-route.
     generation_provider_order_raw: str = ""
 
+    # How many recent turn *exchanges* (one incoming message + one
+    # reply, each) to fold into every /reply call as short-term
+    # conversational context, separate from durable MemoryFacts.
+    # 6 is enough to answer "summarize the conversation so far"
+    # without letting the prompt grow unboundedly on long threads.
+    history_turns: int = 6
+
     @property
     def generation_provider_order(self) -> list[str]:
         """Return `generation_provider_order_raw` split into providers."""

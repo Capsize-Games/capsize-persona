@@ -5,6 +5,9 @@ there is one place the deployed database is configured.
 """
 
 from alembic import context
+from capsize_memory import models as memory_models
+from capsize_memory.db import Base as MemoryBase
+from capsize_memory.db import UtcDateTime as MemoryUtcDateTime
 from sqlalchemy import engine_from_config, pool
 
 from capsize_persona import models
@@ -13,11 +16,15 @@ from capsize_persona.db.base import Base, UtcDateTime
 
 config = context.config
 
-# Importing the models module is what registers every table on the
-# metadata; naming its export here states that dependency outright.
+# Importing the models modules is what registers every table on their
+# respective metadata; naming the exports here states that dependency
+# outright. capsize-memory owns its own Base/metadata (it's a mounted
+# library, not part of this service's own schema) - Alembic accepts a
+# list of MetaData objects for exactly this "combine two bases" case.
 _REGISTERED_TABLES = tuple(models.__all__)
+_REGISTERED_MEMORY_TABLES = tuple(memory_models.__all__)
 
-target_metadata = Base.metadata
+target_metadata = [Base.metadata, MemoryBase.metadata]
 
 
 def _render_item(type_: str, obj: object, autogen_context: object) -> object:
@@ -27,9 +34,11 @@ def _render_item(type_: str, obj: object, autogen_context: object) -> object:
     way to and from the driver. The column it creates is an ordinary
     timestamp-with-timezone, so that's what a migration should say -
     and it keeps a revision file from needing to import application
-    code just to run.
+    code just to run. Covers both this service's own `UtcDateTime` and
+    capsize-memory's structurally-identical one (a separate class, its
+    own mounted library) - same reasoning applies to either.
     """
-    if type_ == "type" and isinstance(obj, UtcDateTime):
+    if type_ == "type" and isinstance(obj, (UtcDateTime, MemoryUtcDateTime)):
         return "sa.DateTime(timezone=True)"
     return False
 

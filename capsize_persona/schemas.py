@@ -38,10 +38,30 @@ class PersonaOut(BaseModel):
     updated_at: datetime.datetime
 
 
-class ReplyRequest(BaseModel):
-    """Body for POST /personas/{id}/reply."""
+class RoomIdentity(BaseModel):
+    """Room-identity fields shared by /reply and /should-interject.
+
+    `platform`/`room_type`/`room_key`/`room_display_name`/`speaker_id`
+    are all optional and additive: an older caller sending only
+    `conversation_key` still works unmodified (it becomes the room's
+    `external_key`, with `platform`/`room_type` falling back to
+    "unknown") - see `rooms.resolve_room` for the exact fallback.
+    `speaker_id` is a stable per-platform participant id (e.g. a
+    Discord user id) - distinct from `author`, which is a display name
+    and can change.
+    """
 
     conversation_key: str = Field(min_length=1, max_length=255)
+    platform: str | None = Field(default=None, max_length=32)
+    room_type: str | None = Field(default=None, max_length=32)
+    room_key: str | None = Field(default=None, max_length=255)
+    room_display_name: str | None = Field(default=None, max_length=255)
+    speaker_id: str | None = Field(default=None, max_length=255)
+
+
+class ReplyRequest(RoomIdentity):
+    """Body for POST /personas/{id}/reply."""
+
     message: str = Field(min_length=1)
     author: str = Field(min_length=1, max_length=120)
 
@@ -64,6 +84,60 @@ class ReplyResponse(BaseModel):
     status: str
     safety_score: float | None
     attempts: int
+
+
+class ShouldInterjectRequest(RoomIdentity):
+    """Body for POST /personas/{id}/should-interject."""
+
+    message: str = Field(min_length=1)
+    author: str = Field(min_length=1, max_length=120)
+
+
+class ShouldInterjectResponse(BaseModel):
+    """What POST /personas/{id}/should-interject returns."""
+
+    interject: bool
+
+
+class TurnCreate(RoomIdentity):
+    """Body for POST /personas/{id}/turns - a direct, known turn.
+
+    For a caller that already knows what was said rather than relying
+    on /reply's own generate-and-record flow (e.g. a one-way outgoing
+    log of a Bluesky post that actually went out - there's no
+    "message" it was replying to).
+    """
+
+    speaker: str = Field(min_length=1, max_length=120)
+    text: str = Field(min_length=1)
+    is_sensitive: bool = False
+
+
+class RoomOut(BaseModel):
+    """What GET /personas/{id}/rooms returns, one row per room."""
+
+    model_config = {"from_attributes": True}
+
+    id: int
+    platform: str
+    room_type: str
+    external_key: str
+    display_name: str | None
+    created_at: datetime.datetime
+    last_active_at: datetime.datetime | None
+
+
+class TurnOut(BaseModel):
+    """What the turns endpoints return for one stored turn."""
+
+    model_config = {"from_attributes": True}
+
+    id: int
+    room_id: int
+    speaker: str
+    text: str
+    is_sensitive: bool
+    created_at: datetime.datetime
 
 
 class GenerateRequest(BaseModel):

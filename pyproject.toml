@@ -28,6 +28,7 @@ classifiers = [
 ]
 dependencies = [
     "capsize-voice>=0.1.0",
+    "capsize-memory>=0.1.0",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "sqlalchemy>=2.0.30",

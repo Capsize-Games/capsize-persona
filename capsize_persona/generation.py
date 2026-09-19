@@ -9,6 +9,7 @@ now folding a conversation's remembered facts into the prompt first.
 import json
 from dataclasses import dataclass
 
+from capsize_memory import Turn
 from capsize_voice import (
     GenerationError,
     SafetyCategory,
@@ -18,6 +19,9 @@ from capsize_voice import (
     is_flagged,
     load_categories,
     score_text,
+)
+from capsize_voice import (
+    should_interject as _voice_should_interject,
 )
 
 from capsize_persona.config import Settings
@@ -30,6 +34,7 @@ __all__ = [
     "extract_new_facts",
     "generate_post_candidates",
     "generate_safe_reply",
+    "should_interject",
 ]
 
 MAX_ATTEMPTS = 3
@@ -58,6 +63,7 @@ class _VoiceContext:
     exemplars: list[str]
     categories: list[SafetyCategory]
     threshold: float
+    recent_turns: list[tuple[str, str]]
 
 
 def _fold_identity(style_guide: str, speaker_name: str) -> str:
@@ -95,7 +101,11 @@ def _extra_body(provider_order: list[str]) -> dict[str, object] | None:
 
 
 def _build_context(
-    settings: Settings, persona: Persona, facts: list[str], speaker_name: str
+    settings: Settings,
+    persona: Persona,
+    facts: list[str],
+    recent_turns: list[Turn],
+    speaker_name: str,
 ) -> _VoiceContext:
     style_guide = _fold_identity(persona.style_guide, speaker_name)
     style_guide = _fold_memory(style_guide, facts)
@@ -107,6 +117,7 @@ def _build_context(
         json.loads(persona.exemplars_json),
         load_categories(json.loads(persona.safety_categories_json)),
         persona.safety_threshold,
+        [(turn.speaker, turn.text) for turn in recent_turns],
     )
 
 
@@ -121,6 +132,7 @@ def _attempt_reply(
         message,
         author,
         model=ctx.model,
+        recent_turns=ctx.recent_turns,
         extra_body=ctx.extra_body,
     )
     score = score_text(reply, ctx.categories)
@@ -147,6 +159,7 @@ def generate_safe_reply(
     settings: Settings,
     persona: Persona,
     facts: list[str],
+    recent_turns: list[Turn],
     message: str,
     author: str,
     speaker_name: str,
@@ -158,10 +171,38 @@ def generate_safe_reply(
     this reply - a persona speaking as "capsize" on Discord and "Joe"
     on joecurlee.com is the same voice under two different names, not
     two personas, so this is a per-call argument, not a `Persona`
-    field.
+    field. `recent_turns` is the short-term conversational context
+    (distinct from `facts`, the durable memory) - the same turns are
+    reused across every retry attempt within this one call; only
+    safety-flagging changes attempt to attempt, not history.
     """
-    ctx = _build_context(settings, persona, facts, speaker_name)
+    ctx = _build_context(settings, persona, facts, recent_turns, speaker_name)
     return _run_attempts(ctx, message, author)
+
+
+def should_interject(
+    settings: Settings,
+    message: str,
+    author: str,
+    recent_turns: list[Turn],
+) -> bool:
+    """Return whether the persona should reply to an ambient message.
+
+    Never raises: a failed classification call defaults to not
+    interjecting, the same "fail toward silence" posture the Discord
+    gateway's own kill-switch already uses.
+    """
+    try:
+        return _voice_should_interject(
+            settings.openrouter_api_key,
+            message,
+            author,
+            [(turn.speaker, turn.text) for turn in recent_turns],
+            model=settings.generation_model,
+            extra_body=_extra_body(settings.generation_provider_order),
+        )
+    except GenerationError:
+        return False
 
 
 def generate_post_candidates(
