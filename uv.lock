@@ -119,7 +119,11 @@ wheels = [
 [[package]]
 name = "capsize-commons"
 version = "0.1.0"
-source = { git = "https://github.com/Capsize-Games/capsize-commons.git?subdirectory=python#5bb54fd772693c42ec4397872cdbe580a31dc6f2" }
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/94/80f57f950e9b214375d54eb8f0d210bd8b24fd3edab45094901a16e081c9/capsize_commons-0.1.0.tar.gz", hash = "sha256:98ae37b61b21e392aa74fa5b36c4da8157190a01eaf52db1b3bc95a91e896d2b", size = 18393, upload-time = "2026-09-19T16:01:02.646Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/0e/8826ca0834ea6e03edb6e4221b884dda20801a3c9dd22059079d192233ca/capsize_commons-0.1.0-py3-none-any.whl", hash = "sha256:6875fd70f39274e291b558d1e593dd783fb83a9aaf6dada9c47859969513de23", size = 17593, upload-time = "2026-09-19T16:01:01.293Z" },
+]
 
 [package.optional-dependencies]
 config = [
@@ -177,7 +181,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.13" },
-    { name = "capsize-commons", extras = ["config", "db", "web"], git = "https://github.com/Capsize-Games/capsize-commons.git?subdirectory=python" },
+    { name = "capsize-commons", extras = ["config", "db", "web"], specifier = ">=0.1" },
     { name = "capsize-memory", editable = "../capsize-memory" },
     { name = "capsize-voice", editable = "../capsize-voice" },
     { name = "fastapi", specifier = ">=0.115" },
