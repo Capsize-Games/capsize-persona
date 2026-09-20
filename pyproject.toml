@@ -30,8 +30,8 @@ dependencies = [
     "capsize-voice>=0.1.0",
     "capsize-memory>=0.1.0",
     # Shared Capsize library: settings base, SQLAlchemy conventions,
-    # API-key auth. Consumed from git until it is on an index.
-    "capsize-commons[config,db,web]>=0.1.1",
+    # API-key auth. Pinned to the published compatibility release.
+    "capsize-commons[config,db,web]>=0.1.2",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "sqlalchemy>=2.0.30",

@@ -118,11 +118,11 @@ wheels = [
 
 [[package]]
 name = "capsize-commons"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/12/f3/77cd7ee4b28b48db8ec28dd218693731a2f99c5ac0a2f18b5e06952af147/capsize_commons-0.1.1.tar.gz", hash = "sha256:beca3e1072dd8dff7a4a7c9f085ecaa69662be3c656e38d237ef73ad103d2012", size = 19189, upload-time = "2026-09-19T17:04:18.573Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/d1/c18b2c97b6b2405760e2101870931c589eeeb6332ba77c7ae8b4ff68f670/capsize_commons-0.1.2.tar.gz", hash = "sha256:b7be57a0c12e28e4dfd81d7588d5d5355313b9b8cf363652e2ffa38bd374fea2", size = 19742, upload-time = "2026-09-20T02:18:42.038Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/72/a68e8ad487171f5f544e1e06b07e3f3951db2122d5d56428cb9b8789f9bc/capsize_commons-0.1.1-py3-none-any.whl", hash = "sha256:d2c9525e082abfb21a3813241212e250fc26e26a58c9f28bb2bd2986ee6c2510", size = 18201, upload-time = "2026-09-19T17:04:17.48Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/81/443fde491710455ec92b0217e67d7dcfe6f2a6fa36085004a6b0c4c50af9/capsize_commons-0.1.2-py3-none-any.whl", hash = "sha256:e3ef1714513ec54e60fea3b72457f9604b17f0458150fb8e82718ecb34065e11", size = 18729, upload-time = "2026-09-20T02:18:41.109Z" },
 ]
 
 [package.optional-dependencies]
@@ -181,7 +181,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.13" },
-    { name = "capsize-commons", extras = ["config", "db", "web"], specifier = ">=0.1.1" },
+    { name = "capsize-commons", extras = ["config", "db", "web"], specifier = ">=0.1.2" },
     { name = "capsize-memory", editable = "../capsize-memory" },
     { name = "capsize-voice", editable = "../capsize-voice" },
     { name = "fastapi", specifier = ">=0.115" },
