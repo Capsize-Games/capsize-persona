@@ -11,9 +11,9 @@ still takes settings through FastAPI's `Depends`, so the test suite's
 
 from __future__ import annotations
 
+from capsize_commons.web import check_api_key
 from fastapi import Header, HTTPException, status
 
-from capsize_commons.web import check_api_key
 from capsize_persona.deps import SettingsDep
 
 
