@@ -14,6 +14,15 @@ reimplementation of it, and has no opinion on who's calling it - Discord
 bots, an AI agent framework, anything that wants "reply as this persona,
 remembering what it's learned" over HTTP.
 
+## Fleet boundary
+
+The service uses `capsize-commons` for shared settings, database primitives,
+health/readiness routes, and constant-time API-key comparison. Persona models,
+generation and safety orchestration, memory policy, migrations, provider/model
+policy, Docker startup, and secret injection remain local. See
+[the fleet consolidation boundary](docs/FLEET_CONSOLIDATION.md) for the
+dependency table and rollback decisions.
+
 ## Auth
 
 Every request needs an `X-API-Key` header matching `PERSONA_API_KEY`.
